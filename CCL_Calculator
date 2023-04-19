@@ -1,0 +1,86 @@
+import requests
+import json
+import pandas as pd
+import numpy as np
+import time
+import tabulate
+import matplotlib.pyplot as plt
+from datetime import datetime
+
+# Set up environment variables or configuration file for username and password
+
+# Function to get access token
+def get_access_token(username, password):
+    url = "https://api.invertironline.com/token"
+    data = {
+        "username": username,
+        "password": password,
+        "grant_type": "password"
+    }
+
+    response = requests.post(url=url, data=data)
+    token = json.loads(response.text)
+    return token["access_token"], token["refresh_token"]
+
+# Function to fetch stock quotes
+def fetch_stock_quotes(symbols, mercado, bearer):
+    quotes = []
+    for symbol in symbols:
+        url = f"https://api.invertironline.com/api/v2/{mercado}/Titulos/{symbol}/Cotizacion"
+        data = {
+            "mercado": mercado,
+            "simbolo": symbol,
+            "model.simbolo": symbol,
+            "model.mercado": mercado,
+            "model.plazo": "t2"
+        }
+        headers = {
+            'Host': 'www.invertironline.com',
+            "Authorization": "bearer " + bearer
+        }
+        response = requests.get(url=url, data=data, headers=headers)
+        quotes.append(json.loads(response.text)["ultimoPrecio"])
+    return quotes
+
+# Function to calculate CCL
+def calculate_ccl(local_quotes, adr_quotes, multiplier):
+    ccl = []
+    for local_quote, adr_quote in zip(local_quotes, adr_quotes):
+        ccl.append(round(local_quote * multiplier / adr_quote, 2))
+    return ccl
+
+# Main function
+def execute_something():
+    # Get access token
+    username = "username" # Replace with environment variable or config
+    password = "password" # Replace with environment variable or config
+    access_token, refresh_token = get_access_token(username, password)
+    
+    # Fetch stock quotes
+    symbols = ["GGAL", "YPF", "PAM", "TEO"] # Example symbols
+    mercado = "bCBA" # Example mercado
+    local_quotes = fetch_stock_quotes(symbols, mercado, access_token)
+    
+    # Fetch ADR quotes
+    adr_symbols = ["GGAL", "YPF", "PAM", "TEO"] # Example ADR symbols
+    adr_quotes = fetch_stock_quotes(adr_symbols, "bNYSE", access_token)
+    
+    # Calculate CCL
+    multiplier = 10 # Example multiplier
+    ccl = calculate_ccl(local_quotes, adr_quotes, multiplier)
+    
+    # Create dataframe
+    df = pd.DataFrame({"Symbol": symbols, "Local_Quote": local_quotes, "ADR_Quote": adr_quotes, "CCL": ccl})
+    
+    # Display dataframe
+    print(tabulate.tabulate(df, headers='keys', tablefmt='psql'))
+    
+    # Plot CCL
+    plt.bar(symbols, ccl)
+    plt.xlabel("Symbol")
+    plt.ylabel("CCL")
+    plt.title("CCL for Local Stocks")
+    plt.show()
+
+# Call the main function
+execute_something()
