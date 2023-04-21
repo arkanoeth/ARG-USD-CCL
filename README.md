@@ -29,6 +29,7 @@ To install the dependencies, use the package manager pip in the terminal:
 To use the project, follow these steps:
 
 1- Set up environment variables or a configuration file for the username and password.
+
 2- Call the _execute_something()_ function.
 
 The _execute_something()_ function fetches the stock quotes, calculates the CCL, creates a dataframe, displays the dataframe and plots the CCL.
