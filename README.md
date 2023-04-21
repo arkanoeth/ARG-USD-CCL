@@ -7,11 +7,17 @@ I wrote this code back in 2020 to help me calculate the CCL in Argentina. Basica
 The project requires the following dependencies:
 
 requests
+
 json
+
 pandas
+
 numpy
+
 time
+
 tabulate
+
 matplotlib
 
 To install the dependencies, use the package manager pip in the terminal:
